@@ -1,17 +1,20 @@
 <script lang="ts">
 	import { afterUpdate, onMount } from 'svelte';
 	import { HDB_Resale_Flat_Record } from '../models/record';
+	import FlatDataChart from './flatDataChart.svelte';
+
 	export let flatType: string;
 	export let data: HDB_Resale_Flat_Record[];
 
-	let myChart;
-	let tableData = [];
-
+	// let myChart;
+	let filteredDataForDisplay = [];
+	// let filteredDataForDisplay_additionalFilters = [];
+	let blockInput:string = "";
     // console.log = function() {}
 
 	function refreshComponentData() {
-		tableData = loadData();
-		drawChart();
+		filteredDataForDisplay = loadData();
+		// filteredDataForDisplay_additionalFilters = filteredDataForDisplay;
 	}
 
 	function formatDate(monthYearString: string) {
@@ -24,131 +27,43 @@
 		return monthString;
 	}
 
-	function getLabels() {
-		return [...new Set(tableData.map((item) => item.month))];
-	}
-
-	function generateDatasetFilteredByFlatType() {
-		let chartLabels = getLabels();
-		// get distinct flat types
-		let flatTypes = [...new Set(data.map((item) => item.flat_type))];
-		if (flatType !== 'All') flatTypes = [flatType];
-		// filter data by each flat type
-		const ds = flatTypes.map((flatType) => {
-			const filteredData = tableData
-				.filter((item) => item.flat_type === flatType)
-				.sort(sortDataByMonth);
-			return {
-				flatType: flatType,
-				data: filteredData.map((item) => item.resale_price),
-				temp: filteredData.map((item) => item.month)
-			};
-		});
-		// console.log(ds);
-
-		let dses = {};
-		for (let ds_ of ds) {
-			// console.log(ds_);
-			// combine data and temp into a map
-			let map = new Map();
-			for (let i = 0; i < ds_.data.length; i++) {
-				if (map.has(ds_.temp[i])) {
-					let val = map.get(ds_.temp[i]).val;
-					let count = map.get(ds_.temp[i]).count;
-					map.set(ds_.temp[i], {
-						count: count + 1,
-						val: parseFloat(val) + parseFloat(ds_.data[i])
-					});
-				} else map.set(ds_.temp[i], { count: 1, val: parseFloat(ds_.data[i]) });
-			}
-			dses[ds_.flatType] = { map: map };
-		}
-		// console.log(dses);
-		for (let flatType of flatTypes) {
-			let arr = [];
-			for (let label of chartLabels) {
-				let temp_val = dses[flatType].map.get(label) ?? null;
-				if (temp_val != null) {
-					arr.push(temp_val.val / temp_val.count);
-				} else {
-					arr.push(null);
-				}
-				// arr.push(dses[flatType].map.get(label) ?? null);
-			}
-			// console.log(arr);
-			dses[flatType].data = arr;
-		}
-		// console.log(dses);
-
-		const datasets = flatTypes.map((flatType) => {
-			// console.log(dses[flatType].data);
-			const filteredData = tableData
-				.filter((item) => item.flat_type === flatType)
-				.sort(sortDataByMonth);
-			return {
-				label: flatType,
-				data: dses[flatType].data,
-				spanGaps: true,
-				// temp: filteredData.map((item) => item.month),
-
-				// backgroundColor: ['rgba(255, 99, 132, 0.2)'],
-				// borderColor: ['rgba(255, 99, 132, 1)'],
-				borderWidth: 1
-			};
-		});
-		// console.log(datasets);
-		return datasets;
-	}
-
-	function filterData(flatType, filteredData) {
-		return filteredData.map((item) => {
-			// console.log(flatType, item);
-			return item.resale_price;
-		});
-	}
-
-	function drawChart() {
-		if (myChart) myChart.destroy();
-		const ctx = document.getElementById('myChart');
-		let chartObj = {
-			type: 'line',
-			data: {
-				labels: getLabels(),
-				datasets: generateDatasetFilteredByFlatType()
-			},
-			options: {
-				responsive: true,
-				maintainAspectRatio: false,
-				scales: {
-					y: {
-						beginAtZero: false
-					}
-				}
-			}
-		};
-		myChart = new Chart(ctx, chartObj);
-	}
-
 	function loadData() {
+		let res;
 		if (flatType !== 'All')
-			return data.filter((item) => item.flat_type === flatType).sort(sortDataByMonth);
-		else return data.sort(sortDataByMonth);
+			res = data.filter((item) => item.flat_type === flatType).sort(sortDataByMonth);
+		else res = data.sort(sortDataByMonth);
+		// console.log("LLL",res);
+		return res;
 	}
 
-	function sortDataByMonth(a, b) {
+	function sortDataByMonth(a, b, reverse = false) {
+		if (reverse) return getDateObj(b.month).getTime() - getDateObj(a.month).getTime();
 		return getDateObj(a.month).getTime() - getDateObj(b.month).getTime();
 		function getDateObj(monthYearString: string) {
 			const [year, month] = monthYearString.split('-');
 			return new Date(`${year}-${month}-01`);
 		}
 	}
-	onMount(drawChart);
+
+
+	// function filterList(){
+	// 	if (blockInput == "") {
+	// 		return filteredDataForDisplay;
+	// 	} else {
+	// 		return filteredDataForDisplay.filter((item:HDB_Resale_Flat_Record) => item.block.includes(blockInput)).map(item => ({...item,test:Math.random()}));
+	// 	}
+	// }
+	onMount(refreshComponentData);
 	afterUpdate(refreshComponentData);
 </script>
-
-<div style="height:300px">
-	<canvas id="myChart" />
+<div>
+		<input type="text" bind:value={blockInput}/>
 </div>
+<div style="height:300px">
+	<!-- <canvas id="myChart" /> -->
+	<FlatDataChart filteredDataForDisplay={blockInput == "" && filteredDataForDisplay.length > 0 ? filteredDataForDisplay : filteredDataForDisplay.filter((item) => item.block.includes(blockInput))} />
+</div>
+
 <h2>{flatType} Table</h2>
 <div class="table-responsive small">
 	<table class="table table-striped table-sm">
@@ -168,7 +83,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each tableData as item}
+			{#each (blockInput == "" && filteredDataForDisplay.length > 0 ? filteredDataForDisplay : filteredDataForDisplay.filter((item) => item.block.includes(blockInput))).sort((a,b)=> sortDataByMonth(a,b,true)) as item}
 				<tr>
 					<td>{item.block}</td>
 					<td>{item.flat_model}</td>

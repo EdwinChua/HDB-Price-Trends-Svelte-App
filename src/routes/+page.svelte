@@ -1,13 +1,15 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { HDB_Resale_Flat_Record } from '../models/record';
-	import Table from '../components/flatDataComponent.svelte';
+	import FlatDataComponent from '../components/flatDataComponent.svelte';
+  import FlatDataBreakdownComponent from '../components/flatDataBreakdownComponent.svelte';
 
-  const maxApiCalls = 10;
+  const maxApiCalls = 20;
+  let isLoading:boolean = false;
 	let data: HDB_Resale_Flat_Record[] = []; // Variable to store the retrieved data
 	let activeTab = 'All'; // Variable to store the active tab
   let baseApi = `https://data.gov.sg`;
-  let query:string = 'FARRER PK RD';
+  let query:string = 'SELEGIE RD';
   let distinctFlatTypes = [];
 
    async function refreshComponent(){
@@ -21,6 +23,7 @@
   }
 
 	async function fetchData() {
+    isLoading = true;
     console.log(query);
 		try {
 			const response = await fetch(
@@ -28,26 +31,33 @@
 			);
 			const result = await response.json();
       let apiCallCount = 1;
-			data = result.result.records as HDB_Resale_Flat_Record[];
-      console.log(result.result.total)
-      if (result.result._links.next && data.length < result.result.total) {
+      let data_temp = result.result.records as HDB_Resale_Flat_Record[];
+      
+      // console.log(result.result.total)
+      if (result.result._links.next && data_temp.length < result.result.total) {
         let result2 = result;
-        while(result2.result._links.next && data.length < result2.result.total && apiCallCount < maxApiCalls){
+        while(result2.result._links.next && data_temp.length < result2.result.total && apiCallCount < maxApiCalls){
           const response2 = await fetch(`${baseApi}/${result2.result._links.next}`);
           result2 = await response2.json();
           apiCallCount++;
-          data = data.concat(result2.result.records as HDB_Resale_Flat_Record[]);
+          data_temp = data_temp.concat(result2.result.records as HDB_Resale_Flat_Record[]);
         }
+
         // window.alert(data.length)
-        console.warn(data)
+        // console.warn(data)
       }
+      data = data_temp.filter((item) => item.street_name.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
+      console.log("LOAD DONE",data)
+      console.log("LOAD DONE",data.length)
+      isLoading = false;
 		} catch (error) {
 			console.error('Error fetching data:', error);
+      isLoading = false;
 		}
 	}
 
 	function getDistinctFlatTypes() {
-		return [...new Set(data.map((item) => item.flat_type))];
+		return [...new Set(data.map((item) => item.flat_type))].sort((a, b) => a.localeCompare(b));
 	}
 	function setActiveTab(tab) {
 		activeTab = tab;
@@ -58,6 +68,7 @@
 <form on:submit|preventDefault={submitForm}>
 <input type="text" bind:value={query}/><button type="submit">Search</button>
 </form>
+
 <h1>Results for: {query}</h1>
 <ul class="nav">
 	{#if data.length > 0}
@@ -72,9 +83,9 @@
 	{/if}
 </ul>
 
-<div class="container">
+<div class="container-fluid">
   <div class="row">
-    <main class="col-md-9  col-lg-10 px-md-4">
+    <main class="col-md-6 col-lg-6 px-md-4">
       <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h1 class="h2">Dashboard</h1>
         <div class="btn-toolbar mb-2 mb-md-0">
@@ -82,18 +93,23 @@
             <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
             <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
           </div>
-          <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle ">
-            
+          <!-- <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle ">
             This week
-          </button>
+          </button> -->
         </div>
       </div>
-{#if data.length > 0}
-  <Table flatType={activeTab} {data} />
-
-{:else}
-	<p>Loading data...</p>
-{/if}
+  {#if data.length > 0}
+    <FlatDataComponent flatType={activeTab} data={data} />
+  {:else}
+    <p>Nothing Found</p>
+  {/if}
 </main>
+<div class="col-md-6 col-lg-6 px-md-4">
+  {#if data.length > 0}
+  <FlatDataBreakdownComponent flatType={activeTab} {data} />
+{:else}
+	<p>Nothing Found</p>
+{/if}
+</div>
 </div>
 </div>

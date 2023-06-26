@@ -6,15 +6,11 @@
 	export let flatType: string;
 	export let data: HDB_Resale_Flat_Record[];
 
-	// let myChart;
 	let filteredDataForDisplay = [];
-	// let filteredDataForDisplay_additionalFilters = [];
-	let blockInput:string = "";
-    // console.log = function() {}
+	let blockInput: string = '';
 
 	function refreshComponentData() {
 		filteredDataForDisplay = loadData();
-		// filteredDataForDisplay_additionalFilters = filteredDataForDisplay;
 	}
 
 	function formatDate(monthYearString: string) {
@@ -36,32 +32,32 @@
 		return res;
 	}
 
-	function sortDataByMonth(a, b, reverse = false) {
-		if (reverse) return getDateObj(b.month).getTime() - getDateObj(a.month).getTime();
+	function sortDataByMonth(a, b) {
 		return getDateObj(a.month).getTime() - getDateObj(b.month).getTime();
-		function getDateObj(monthYearString: string) {
-			const [year, month] = monthYearString.split('-');
-			return new Date(`${year}-${month}-01`);
-		}
+	}
+	function sortDataByMonthReverse(a, b) {
+		return getDateObj(b.month).getTime() - getDateObj(a.month).getTime();
+	}
+	function getDateObj(monthYearString: string) {
+		const [year, month] = monthYearString.split('-');
+		return new Date(`${year}-${month}-01`);
 	}
 
-
-	// function filterList(){
-	// 	if (blockInput == "") {
-	// 		return filteredDataForDisplay;
-	// 	} else {
-	// 		return filteredDataForDisplay.filter((item:HDB_Resale_Flat_Record) => item.block.includes(blockInput)).map(item => ({...item,test:Math.random()}));
-	// 	}
-	// }
 	onMount(refreshComponentData);
 	afterUpdate(refreshComponentData);
 </script>
+
 <div>
-		<input type="text" bind:value={blockInput}/>
+	<input type="text" bind:value={blockInput} />
 </div>
 <div style="height:300px">
 	<!-- <canvas id="myChart" /> -->
-	<FlatDataChart filteredDataForDisplay={blockInput == "" && filteredDataForDisplay.length > 0 ? filteredDataForDisplay : filteredDataForDisplay.filter((item) => item.block.includes(blockInput))} />
+	<FlatDataChart
+		filteredDataForDisplay={(blockInput == '' && filteredDataForDisplay.length > 0
+			? filteredDataForDisplay
+			: filteredDataForDisplay.filter((item) => item.block.includes(blockInput))
+		).sort(sortDataByMonth)}
+	/>
 </div>
 
 <h2>{flatType} Table</h2>
@@ -83,7 +79,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each (blockInput == "" && filteredDataForDisplay.length > 0 ? filteredDataForDisplay : filteredDataForDisplay.filter((item) => item.block.includes(blockInput))).sort((a,b)=> sortDataByMonth(a,b,true)) as item}
+			{#each (blockInput == '' && filteredDataForDisplay.length > 0 ? filteredDataForDisplay : filteredDataForDisplay.filter( (item) => item.block.includes(blockInput) )).sort(sortDataByMonthReverse) as item}
 				<tr>
 					<td>{item.block}</td>
 					<td>{item.flat_model}</td>
@@ -100,4 +96,39 @@
 			{/each}
 		</tbody>
 	</table>
+	<!-- TODO: Enable this block for correct sorting on chart -->
+	<!-- <table class="table table-striped table-sm">
+		<thead>
+			<tr>
+				<th scope="col">Block</th>
+				<th scope="col">Flat Model</th>
+				<th scope="col">Flat Type</th>
+				<th scope="col">Floor Area (sqm)</th>
+				<th scope="col">Lease Commence Date</th>
+				<th scope="col">Month</th>
+				<th scope="col">Remaining Lease</th>
+				<th scope="col">Resale Price</th>
+				<th scope="col">Storey Range</th>
+				<th scope="col">Street Name</th>
+				<th scope="col">Town</th>
+			</tr>
+		</thead>
+		<tbody>
+			{#each (blockInput == '' && filteredDataForDisplay.length > 0 ? filteredDataForDisplay : filteredDataForDisplay.filter( (item) => item.block.includes(blockInput) )).sort( sortDataByMonth) as item}
+				<tr>
+					<td>{item.block}</td>
+					<td>{item.flat_model}</td>
+					<td>{item.flat_type}</td>
+					<td>{item.floor_area_sqm}</td>
+					<td>{item.lease_commence_date}</td>
+					<td>{formatDate(item.month)}</td>
+					<td>{item.remaining_lease}</td>
+					<td>{item.resale_price}</td>
+					<td>{item.storey_range}</td>
+					<td>{item.street_name}</td>
+					<td>{item.town}</td>
+				</tr>
+			{/each}
+		</tbody>
+	</table> -->
 </div>

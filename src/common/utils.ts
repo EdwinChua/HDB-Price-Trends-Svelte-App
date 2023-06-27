@@ -11,13 +11,16 @@ export default class Utils {
         return monthString;
     }
 
-    static filterResaleFlatData(originalData: HDB_Resale_Flat_Record[], block: string, flatType:string): HDB_Resale_Flat_Record[] {
+    static filterResaleFlatData(originalData: HDB_Resale_Flat_Record[], block: string, flatType:string, leaseCommenceDate:string,): HDB_Resale_Flat_Record[] {
         let filteredData: HDB_Resale_Flat_Record[] = originalData.map(item => item); // make a copy
         if (block && block !== '') {
             filteredData = filteredData.filter(item => item.block === block)
         } 
         if (flatType && flatType !== '') {
             filteredData = filteredData.filter(item => item.flat_type === flatType)
+        }
+        if (leaseCommenceDate && leaseCommenceDate !== '') {
+            filteredData = filteredData.filter(item => parseInt(item.lease_commence_date) >= parseInt(leaseCommenceDate));
         }
         return filteredData;
     }

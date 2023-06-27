@@ -1,35 +1,35 @@
 <script lang="ts">
 	import { afterUpdate, onMount } from 'svelte';
 	import type { HDB_Resale_Flat_Record } from 'src/models/record';
-	import Utils  from '../../../common/utils';
+	import Utils from '../../../common/utils';
 
-
-	export let data:HDB_Resale_Flat_Record[] = [];
-	export let filteredData:HDB_Resale_Flat_Record[] = [];
-    export let flatType: string = "";
-	export let block:string = "";
+	export let data: HDB_Resale_Flat_Record[] = [];
+	export let filteredData: HDB_Resale_Flat_Record[] = [];
+	export let flatType: string = '';
+	export let block: string = '';
+	export let leaseCommenceDate: string = '';
 	let myChart;
-    let chartId:string;
+	let chartId: string;
+	
 
-    function refreshComponentData(){
-		filteredData = Utils.filterResaleFlatData(data,block,flatType)
+	function refreshComponentData() {
+		filteredData = Utils.filterResaleFlatData(data, block, flatType, leaseCommenceDate).sort(Utils.sortDataByMonth);
 		setTimeout(() => {
-        if (!chartId) chartId = `chart-${(Math.random() * 100000).toFixed(0)}`;
-        // console.log(chartId)
-        if (filteredData.length > 0){
-            // console.log("herrrrdd",chartId)
-            drawChart();
-        } }, 1000);
-    }
+			if (!chartId) chartId = `chart-${(Math.random() * 100000).toFixed(0)}`;
+			if (filteredData.length > 0) {
+				drawChart();
+			} else {
+				if (myChart) {
+					myChart.destroy();
+				}
+			}
+		}, 100);
+	}
 
-    function drawChart() {
+	function drawChart() {
 		if (myChart) {
-            myChart.destroy();
-            console.warn("destroyed")
-            // myChart.update();
-            // return;
-        }
-        // console.log(filteredDataForDisplay)
+			myChart.destroy();
+		}
 		const ctx = document.getElementById(chartId);
 		let chartObj = {
 			type: 'line',
@@ -50,14 +50,37 @@
 		myChart = new Chart(ctx, chartObj);
 	}
 
-    function getLabels(list:HDB_Resale_Flat_Record[]) {
-		return [...new Set(list.map((item) => item.month))];
+	function getLabels_Original(list: HDB_Resale_Flat_Record[]) {
+		let labels = [...new Set(list.map((item) => item.month))];
+		return labels;
 	}
-    function getFlatType(list:HDB_Resale_Flat_Record[]) {
+
+	function getLabels(list: HDB_Resale_Flat_Record[]) {
+		let labels = [...new Set(list.map((item) => item.month))];
+		// fill in missing months until current month
+		// get current month and year
+		let currentMonth = new Date().getMonth() + 1;
+		let currentYear = new Date().getFullYear();
+
+		if(labels.length === 0) return labels;
+		const [startYear, startMonth] = labels[0].split('-');
+		// const [endYear, endMonth] = labels[labels.length - 1].split('-');
+		const [endYear, endMonth] = [currentYear, currentMonth];
+		let newLabels = [];
+		for (let year = parseInt(startYear); year <= parseInt(endYear); year++) {
+			let endMonth_ = year === parseInt(endYear) ? parseInt(endMonth) : 12;
+			let startMonth_ = year === parseInt(startYear) ? parseInt(startMonth) : 1;
+			for (let month = startMonth_; month <= endMonth_; month++) {
+				newLabels.push(`${year}-${month.toString().padStart(2, '0')}`);
+			}
+		}
+		return newLabels;
+	}
+	function getFlatType(list: HDB_Resale_Flat_Record[]) {
 		return [...new Set(list.map((item) => item.flat_type))];
 	}
 
-    function sortDataByMonth(a, b) {
+	function sortDataByMonth(a, b) {
 		return getDateObj(a.month).getTime() - getDateObj(b.month).getTime();
 		function getDateObj(monthYearString: string) {
 			const [year, month] = monthYearString.split('-');
@@ -65,11 +88,11 @@
 		}
 	}
 
-    function generateDatasetFilteredByFlatType() {
+	function generateDatasetFilteredByFlatType() {
 		let chartLabels = getLabels(filteredData);
 		// get distinct flat types
 		// let flatTypes = [...new Set(data.map((item) => item.flat_type))];
-        let flatTypes = getFlatType(filteredData);
+		let flatTypes = getFlatType(filteredData);
 		// if (flatType !== 'All') flatTypes = [flatType];
 		// filter data by each flat type
 		const ds = flatTypes.map((flatType) => {
@@ -82,7 +105,7 @@
 				temp: filteredData2.map((item) => item.month)
 			};
 		});
-        // console.log(ds);
+		// console.log(ds);
 		let dses = {};
 		for (let ds_ of ds) {
 			// combine data and temp into a map
@@ -124,13 +147,12 @@
 				borderWidth: 1
 			};
 		});
-        // console.log(datasets)
+		// console.log(datasets)
 		return datasets;
 	}
 
-    onMount(refreshComponentData);
+	onMount(refreshComponentData);
 	afterUpdate(refreshComponentData);
-
 </script>
 
-<canvas id="{chartId}" />
+<canvas id={chartId} />

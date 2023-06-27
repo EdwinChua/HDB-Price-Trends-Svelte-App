@@ -8,9 +8,10 @@
 
     export let block:any = "";
     export let flatType:any = "";
+	export let leaseCommenceDate:any = "";
 
     function refreshComponentData(){
-        filteredData = Utils.filterResaleFlatData(data,block,flatType)
+        filteredData = Utils.filterResaleFlatData(data,block,flatType,leaseCommenceDate)
 		filteredData.sort(Utils.sortDataByMonth_Reverse);
         console.log("refreshComponentData", data)
 

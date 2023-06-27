@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { HDB_Resale_Flat_Record } from '../models/record';
+	import type { HDB_Resale_Flat_Record } from '../models/record';
 	import FlatDataComponent from '../components/flatDataComponent.svelte';
   import FlatDataBreakdownComponent from '../components/flatDataBreakdownComponent.svelte';
 
@@ -42,9 +42,6 @@
           apiCallCount++;
           data_temp = data_temp.concat(result2.result.records as HDB_Resale_Flat_Record[]);
         }
-
-        // window.alert(data.length)
-        // console.warn(data)
       }
       data = data_temp.filter((item) => item.street_name.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
       console.log("LOAD DONE",data)

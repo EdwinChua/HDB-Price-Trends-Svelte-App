@@ -7,10 +7,13 @@
 	export let data: HDB_Resale_Flat_Record[];
 
 	let filteredDataForDisplay = [];
+	let filteredDataForDisplayReverse = [];
 	let blockInput: string = '';
 
 	function refreshComponentData() {
-		filteredDataForDisplay = loadData();
+		filteredDataForDisplay = loadData().map(item => item).sort(sortDataByMonth);
+		console.log(filteredDataForDisplay)
+		filteredDataForDisplayReverse = loadData().map(item => item).sort(sortDataByMonthReverse);
 	}
 
 	function formatDate(monthYearString: string) {
@@ -53,10 +56,7 @@
 <div style="height:300px">
 	<!-- <canvas id="myChart" /> -->
 	<FlatDataChart
-		filteredDataForDisplay={(blockInput == '' && filteredDataForDisplay.length > 0
-			? filteredDataForDisplay
-			: filteredDataForDisplay.filter((item) => item.block.includes(blockInput))
-		).sort(sortDataByMonth)}
+		filteredDataForDisplay={(filteredDataForDisplay.filter( (item) => item.block.includes(blockInput) ))}
 	/>
 </div>
 
@@ -79,7 +79,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each (blockInput == '' && filteredDataForDisplay.length > 0 ? filteredDataForDisplay : filteredDataForDisplay.filter( (item) => item.block.includes(blockInput) )).sort(sortDataByMonthReverse) as item}
+			{#each (filteredDataForDisplayReverse.filter( (item) => item.block.includes(blockInput) )) as item}
 				<tr>
 					<td>{item.block}</td>
 					<td>{item.flat_model}</td>

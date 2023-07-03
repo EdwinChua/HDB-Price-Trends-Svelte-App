@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { afterUpdate, onMount } from 'svelte';
 	import type { HDB_Resale_Flat_Record } from 'src/models/record';
-	import Utils from '../../../common/utils';
+	import Utils from '../../common/utils';
 
 	export let data: HDB_Resale_Flat_Record[] = [];
 	export let filteredData: HDB_Resale_Flat_Record[] = [];

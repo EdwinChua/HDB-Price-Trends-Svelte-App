@@ -11,7 +11,7 @@ export default class Utils {
         return monthString;
     }
 
-    static filterResaleFlatData(originalData: HDB_Resale_Flat_Record[], block: string, flatType:string, leaseCommenceDate:string,): HDB_Resale_Flat_Record[] {
+    static filterResaleFlatData(originalData: HDB_Resale_Flat_Record[], block: string, flatType:string, leaseCommenceDate_After:string, leaseCommenceDate_Before:string,showAfterYear:string, town:string): HDB_Resale_Flat_Record[] {
         let filteredData: HDB_Resale_Flat_Record[] = originalData.map(item => item); // make a copy
         if (block && block !== '') {
             filteredData = filteredData.filter(item => item.block === block)
@@ -19,8 +19,18 @@ export default class Utils {
         if (flatType && flatType !== '') {
             filteredData = filteredData.filter(item => item.flat_type === flatType)
         }
-        if (leaseCommenceDate && leaseCommenceDate !== '') {
-            filteredData = filteredData.filter(item => parseInt(item.lease_commence_date) >= parseInt(leaseCommenceDate));
+        if (leaseCommenceDate_After && leaseCommenceDate_After !== '') {
+            filteredData = filteredData.filter(item => parseInt(item.lease_commence_date) >= parseInt(leaseCommenceDate_After));
+        }
+        if (leaseCommenceDate_Before && leaseCommenceDate_Before !== '') {
+            filteredData = filteredData.filter(item => parseInt(item.lease_commence_date) <= parseInt(leaseCommenceDate_Before));
+        }
+        if (showAfterYear && showAfterYear !== '') {
+            filteredData = filteredData.filter(item => parseInt(item.month.split('-')[0]) >= parseInt(showAfterYear));
+        }
+
+        if (town && town !== '') {
+            filteredData = filteredData.filter(item => item.town === town);
         }
         return filteredData;
     }

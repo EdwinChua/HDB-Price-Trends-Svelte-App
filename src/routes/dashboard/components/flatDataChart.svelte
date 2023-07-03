@@ -7,13 +7,18 @@
 	export let filteredData: HDB_Resale_Flat_Record[] = [];
 	export let flatType: string = '';
 	export let block: string = '';
-	export let leaseCommenceDate: string = '';
+	export let leaseCommenceDate_After: string = '';
+	export let leaseCommenceDate_Before:string = '';
+
+	export let showAfterYear:string = '';
+	export let town:string = '';
 	let myChart;
 	let chartId: string;
-	
 
 	function refreshComponentData() {
-		filteredData = Utils.filterResaleFlatData(data, block, flatType, leaseCommenceDate).sort(Utils.sortDataByMonth);
+		filteredData = Utils.filterResaleFlatData(data,block,flatType,leaseCommenceDate_After,leaseCommenceDate_Before,showAfterYear,town).sort(
+			Utils.sortDataByMonth
+		);
 		setTimeout(() => {
 			if (!chartId) chartId = `chart-${(Math.random() * 100000).toFixed(0)}`;
 			if (filteredData.length > 0) {
@@ -47,7 +52,8 @@
 				}
 			}
 		};
-		myChart = new Chart(ctx, chartObj);
+
+		myChart = new Chart(chartId, chartObj);
 	}
 
 	function getLabels_Original(list: HDB_Resale_Flat_Record[]) {
@@ -62,7 +68,7 @@
 		let currentMonth = new Date().getMonth() + 1;
 		let currentYear = new Date().getFullYear();
 
-		if(labels.length === 0) return labels;
+		if (labels.length === 0) return labels;
 		const [startYear, startMonth] = labels[0].split('-');
 		// const [endYear, endMonth] = labels[labels.length - 1].split('-');
 		const [endYear, endMonth] = [currentYear, currentMonth];
@@ -144,7 +150,15 @@
 				label: flatType,
 				data: dses[flatType].data,
 				spanGaps: true,
-				borderWidth: 1
+				borderWidth: 1,
+
+				trendlineLinear: dses[flatType].data.filter(item => item != null).length > 1 && {
+					colorMin: 'red',
+					colorMax: 'green',
+					lineStyle: 'dotted',
+					width: 2,
+					// projection: true
+				}
 			};
 		});
 		// console.log(datasets)

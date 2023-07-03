@@ -1,4 +1,6 @@
 <script lang="ts">
+  export const prerender = true;
+
 	import { onMount } from 'svelte';
 	import type { HDB_Resale_Flat_Record } from '../models/record';
 	import FlatDataComponent from '../components/flatDataComponent.svelte';

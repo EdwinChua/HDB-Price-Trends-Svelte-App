@@ -12,11 +12,12 @@
 
 	export let showAfterYear:string = '';
 	export let town:string = '';
+	export let floorArea:string = '';
 	let myChart;
 	let chartId: string;
 
 	function refreshComponentData() {
-		filteredData = Utils.filterResaleFlatData(data,block,flatType,leaseCommenceDate_After,leaseCommenceDate_Before,showAfterYear,town).sort(
+		filteredData = Utils.filterResaleFlatData(data,block,flatType,leaseCommenceDate_After,leaseCommenceDate_Before,showAfterYear,town,floorArea).sort(
 			Utils.sortDataByMonth
 		);
 		setTimeout(() => {

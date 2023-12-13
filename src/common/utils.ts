@@ -11,7 +11,7 @@ export default class Utils {
         return monthString;
     }
 
-    static filterResaleFlatData(originalData: HDB_Resale_Flat_Record[], block: string, flatType:string, leaseCommenceDate_After:string, leaseCommenceDate_Before:string,showAfterYear:string, town:string): HDB_Resale_Flat_Record[] {
+    static filterResaleFlatData(originalData: HDB_Resale_Flat_Record[], block: string, flatType:string, leaseCommenceDate_After:string, leaseCommenceDate_Before:string,showAfterYear:string, town:string, floorArea:string): HDB_Resale_Flat_Record[] {
         let filteredData: HDB_Resale_Flat_Record[] = originalData.map(item => item); // make a copy
         if (block && block !== '') {
             filteredData = filteredData.filter(item => item.block === block)
@@ -31,6 +31,9 @@ export default class Utils {
 
         if (town && town !== '') {
             filteredData = filteredData.filter(item => item.town === town);
+        }
+        if (floorArea && floorArea !== '') {
+            filteredData = filteredData.filter(item => parseInt(item.floor_area_sqm) >= parseInt(floorArea));
         }
         return filteredData;
     }

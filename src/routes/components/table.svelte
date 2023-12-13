@@ -14,9 +14,9 @@
 	export let showAfterYear:string = '';
 
 	export let town:string = '';
-
+	export let floorArea:string = '';
     function refreshComponentData(){
-        filteredData = Utils.filterResaleFlatData(data,block,flatType,leaseCommenceDate_After,leaseCommenceDate_Before,showAfterYear,town)
+        filteredData = Utils.filterResaleFlatData(data,block,flatType,leaseCommenceDate_After,leaseCommenceDate_Before,showAfterYear,town,floorArea)
 		filteredData.sort(Utils.sortDataByMonth_Reverse);
         // get top 100
 		filteredDataTop100 = filteredData.slice(0,100);

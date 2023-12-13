@@ -19,6 +19,7 @@
 	let distinctLeaseDates: string[] = [];
 	let distinctYears: string[] = [];
 	let distinctTowns: string[] = [];
+	let distinctFloorArea: string[] = [];
 
 	let filter = {
 		flatType: '',
@@ -26,7 +27,8 @@
 		leaseCommenceDate_After: '',
 		leaseCommenceDate_Before: '',
 		showAfterYear: '',
-		town: ''
+		town: '',
+		floorArea:''
 	};
 
 	async function refreshComponent() {
@@ -37,6 +39,7 @@
 		distinctLeaseDates = getDistinctLeaseDates();
 		distinctYears = getDistinctYears();
 		distinctTowns = getDistinctTowns();
+		distinctFloorArea = getDistinctFloorArea();
 	}
 
 	function submitForm() {
@@ -106,6 +109,12 @@
 	}
 	function getDistinctTowns() {
 		return [...new Set(data.map((item) => item.town))].sort((a, b) => a.localeCompare(b));
+	}
+
+	function getDistinctFloorArea() {
+		return [...new Set(data.map((item) => item.floor_area_sqm))].sort(
+			(a, b) => parseInt(a) - parseInt(b)
+		);
 	}
 	function setActiveTab(tab) {
 		activeTab = tab;
@@ -199,6 +208,17 @@
 	</div>
 </div>
 
+<div class="row g-3">
+	<div class="col-sm-2">
+		<select class="form-select" aria-label="Default select example" bind:value={filter.floorArea}>
+			<option selected value="">Floor Area</option>
+			{#each distinctFloorArea as floorArea}
+				<option value={floorArea}>{floorArea}</option>
+			{/each}
+		</select>
+	</div>
+</div>
+
 <div class="container-fluid">
 	<div class="row">
 		<div class="col-sm-12 col-md-12">
@@ -211,6 +231,7 @@
 					leaseCommenceDate_Before={filter.leaseCommenceDate_Before}
 					showAfterYear={filter.showAfterYear}
 					town={filter.town}
+					floorArea={filter.floorArea}
 				/>
 			</div>
 			<div style="height:300px; overflow:auto">
@@ -221,7 +242,8 @@
 				leaseCommenceDate_After={filter.leaseCommenceDate_After}
 				leaseCommenceDate_Before={filter.leaseCommenceDate_Before}
 				showAfterYear={filter.showAfterYear}
-				town={filter.town}				
+				town={filter.town}	
+				floorArea={filter.floorArea}			
 			/>
 		</div>
 		</div>

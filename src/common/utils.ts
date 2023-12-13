@@ -33,7 +33,7 @@ export default class Utils {
             filteredData = filteredData.filter(item => item.town === town);
         }
         if (floorArea && floorArea !== '') {
-            filteredData = filteredData.filter(item => parseInt(item.floor_area_sqm) >= parseInt(floorArea));
+            filteredData = filteredData.filter(item => parseInt(item.floor_area_sqm) == parseInt(floorArea));
         }
         return filteredData;
     }
